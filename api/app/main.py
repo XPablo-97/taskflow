@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from app.models import Task, TaskCreate
+from app.models import Task, TaskCreate, TaskStatus
 from app import storage
 
 app = FastAPI(title="TaskFlow API")
@@ -28,4 +28,13 @@ def get_task(task_id: str):
     task = storage.get(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+@app.post("/tasks/{task_id}/complete", response_model=Task)
+def complete_task(task_id: str):
+    task = storage.get(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task.status = TaskStatus.done
+    storage.save(task)
     return task
