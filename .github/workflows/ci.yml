@@ -14,10 +14,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Construir imagen de la API
-        run: docker build -t taskflow-api:ci ./api
-
+        run: docker build -f api/Containerfile -t taskflow-api:ci ./api
       - name: Construir imagen del worker
-        run: docker build -t taskflow-worker:ci ./worker
+        run: docker build -f worker/Containerfile -t taskflow-worker:ci ./worker
 
       - name: Escanear API con Trivy
         uses: aquasecurity/trivy-action@v0.36.0
