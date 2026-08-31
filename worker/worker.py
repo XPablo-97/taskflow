@@ -1,7 +1,8 @@
+import os
 import time
 import requests
 
-API_URL = "http://localhost:8000"
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
 POLL_INTERVAL_SECONDS = 5
 
 
