@@ -9,12 +9,16 @@ on:
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
 
       - name: Construir imagen de la API
         run: docker build -f api/Containerfile -t taskflow-api:ci ./api
+
       - name: Construir imagen del worker
         run: docker build -f worker/Containerfile -t taskflow-worker:ci ./worker
 
@@ -31,3 +35,30 @@ jobs:
           image-ref: taskflow-worker:ci
           severity: CRITICAL,HIGH
           exit-code: '0'
+
+      - name: Autenticarse en AWS vía OIDC
+        if: github.event_name == 'push'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::887540997584:role/github-actions-ecr-push
+          aws-region: eu-central-1
+
+      - name: Iniciar sesión en ECR
+        if: github.event_name == 'push'
+        run: aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 887540997584.dkr.ecr.eu-central-1.amazonaws.com
+
+      - name: Etiquetar y subir imagen de la API a ECR
+        if: github.event_name == 'push'
+        run: |
+          docker tag taskflow-api:ci 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-api:${{ github.sha }}
+          docker tag taskflow-api:ci 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-api:latest
+          docker push 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-api:${{ github.sha }}
+          docker push 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-api:latest
+
+      - name: Etiquetar y subir imagen del worker a ECR
+        if: github.event_name == 'push'
+        run: |
+          docker tag taskflow-worker:ci 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-worker:${{ github.sha }}
+          docker tag taskflow-worker:ci 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-worker:latest
+          docker push 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-worker:${{ github.sha }}
+          docker push 887540997584.dkr.ecr.eu-central-1.amazonaws.com/taskflow-worker:latest
