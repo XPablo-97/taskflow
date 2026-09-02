@@ -24,7 +24,7 @@ resource "aws_iam_role" "github_actions_ecr" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:XPablo-97/taskflow:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" = "repo:XPablo-97*/taskflow*:ref:refs/heads/main"
           }
         }
       }
@@ -58,7 +58,8 @@ resource "aws_iam_role_policy" "github_actions_ecr_push" {
         ]
         Resource = [
           aws_ecr_repository.api.arn,
-          aws_ecr_repository.worker.arn
+          aws_ecr_repository.worker.arn,
+          aws_ecr_repository.frontend.arn
         ]
       }
     ]
