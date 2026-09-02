@@ -15,3 +15,12 @@ resource "aws_ecr_repository" "worker" {
         scan_on_push = true
     }
 }
+
+resource "aws_ecr_repository" "frontend" {
+  name                 = "taskflow-frontend"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
